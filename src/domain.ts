@@ -159,7 +159,21 @@ export function validateImport(value: unknown): AppData {
     throw new Error('That backup version is not supported.');
   }
   for (const recipe of candidate.recipes) {
-    if (!recipe || typeof recipe.name !== 'string' || ![1, 2, 3].includes(recipe.effort)) throw new Error('A recipe in the backup is incomplete.');
+    const validRecipe = recipe && typeof recipe.id === 'string' && typeof recipe.name === 'string'
+      && [1, 2, 3].includes(recipe.effort) && typeof recipe.leftoverMeals === 'number'
+      && Array.isArray(recipe.tags) && recipe.tags.every((tag) => typeof tag === 'string')
+      && Array.isArray(recipe.ingredients) && recipe.ingredients.every((ingredient) => ingredient && typeof ingredient.name === 'string')
+      && typeof recipe.notes === 'string' && typeof recipe.createdAt === 'string';
+    if (!validRecipe) throw new Error('A recipe in the backup is incomplete.');
+  }
+  for (const week of Object.values(candidate.weeks)) {
+    if (!week || typeof week.weekStart !== 'string' || !week.days || typeof week.days !== 'object') throw new Error('A week in the backup is incomplete.');
+    for (const day of Object.values(week.days)) {
+      const validDay = day && [1, 2, 3].includes(day.energy) && typeof day.schoolMeal === 'string'
+        && ['planned', 'cooked', 'abandoned'].includes(day.outcome)
+        && (day.dinner === null || (typeof day.dinner === 'object' && ['recipe', 'leftover', 'other'].includes(day.dinner.kind)));
+      if (!validDay) throw new Error('A day in the backup is incomplete.');
+    }
   }
   return candidate as AppData;
 }
