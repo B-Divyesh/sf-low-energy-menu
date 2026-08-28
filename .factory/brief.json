@@ -1,0 +1,12 @@
+{
+  "slug": "low-energy-menu",
+  "title": "Low-Energy Menu",
+  "territory": "utilities",
+  "user": "A household meal planner who needs a realistic weekly dinner plan that respects school meals, repeat fatigue, leftovers, and the cook's energy on each day.",
+  "smallest_useful_product": "An offline week grid where recipes carry effort, leftovers, and tags; users enter school/canteen meals and get a simple conflict/repetition warning plus a grocery export.",
+  "success_measure": "Pilot households cook from the plan on at least four nights per week for three consecutive weeks and mark fewer than one planned dinner per week as abandoned for effort mismatch.",
+  "artifact_class": "pwa-offline",
+  "monetization": "one-time",
+  "constraints": "No scraped recipe corpus; import only user-provided recipe data; make allergens and dietary tags user-entered rather than health claims.",
+  "state": "RESEARCHED"
+}
