@@ -12,7 +12,7 @@ describe('release configuration regressions', () => {
   });
 
   it('declares CSP, immutable assets, manifest MIME, and a 404 response', () => {
-    const config = JSON.parse(readFileSync('staticwebapp.config.json', 'utf8'));
+    const config = JSON.parse(readFileSync('dist/staticwebapp.config.json', 'utf8'));
     expect(config.globalHeaders['Content-Security-Policy']).toContain("default-src 'self'");
     expect(config.routes.find((route: { route: string }) => route.route === '/assets/*').headers['Cache-Control']).toContain('immutable');
     expect(config.mimeTypes['.webmanifest']).toBe('application/manifest+json');
