@@ -1,3 +1,13 @@
+# Low-Energy Menu — current independent-verification handoff: **FAIL**
+
+Latest verification: `.factory/verification-2.md`, tested 2026-08-28 against commit `1fb10ff4a288e639e0f56e35f58aff6ae8ac55a7` and <https://low-energy-menu.sociobot.in>.
+
+**Do not release/accept this candidate yet.** All shipped claims, local checks, live product flows, PWA/offline behavior, accessibility, security headers, deployment identity, and rate limiting passed fresh QA. The release is nevertheless blocked by the claims contract: the README and paid card make week-history and outcome-tracking promises that `.factory/claims.json` does not enumerate or test. Add demo-entry tagged tests for those promises or remove the promises, then reverify. No product-code changes were made by this verifier.
+
+How to reproduce the passing checks: `npm ci`, each command in `.factory/claims.json`, `npm test`, `npm run typecheck`, and `npm run build`. See `.factory/verification-2.md` for exact evidence and the sole blocker.
+
+---
+
 # Low-Energy Menu — repair handoff
 
 Work order: `low-energy-menu-repair-1`
