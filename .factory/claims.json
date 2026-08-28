@@ -1,0 +1,51 @@
+[
+  {
+    "id": "demo-sandbox",
+    "claim": "Try a realistic sample week without reading or changing household planning data.",
+    "where": "landing first screen, demo banner, README",
+    "test": "npm test -- --grep @claim:demo-sandbox",
+    "sandbox": "fresh browser context; create real data, enter /demo/, mutate and reset sample data, return to the untouched real namespace"
+  },
+  {
+    "id": "planning-checks",
+    "claim": "Flags effort mismatches and dinners similar to a school or canteen meal.",
+    "where": "planner, README",
+    "test": "npm test -- --grep @claim:planning-checks",
+    "sandbox": "fresh /demo/ sample week; lower Wednesday energy and assert both visible warnings"
+  },
+  {
+    "id": "grocery-csv",
+    "claim": "Exports planned recipe ingredients as a grocery CSV.",
+    "where": "grocery tool, README",
+    "test": "npm test -- --grep @claim:grocery-csv",
+    "sandbox": "fresh /demo/ sample week; download and assert the header and rows from all three planned recipes"
+  },
+  {
+    "id": "backup-roundtrip",
+    "claim": "Exports and imports the complete plan as JSON.",
+    "where": "data tools, README",
+    "test": "npm test -- --grep @claim:backup-roundtrip",
+    "sandbox": "fresh /demo/ sample week; export, mutate, import, and assert the original recipes and week return"
+  },
+  {
+    "id": "local-private",
+    "claim": "Planning data stays in browser storage and the planner loads no third-party runtime resources.",
+    "where": "landing facts, privacy page, README",
+    "test": "npm test -- --grep @claim:local-private",
+    "sandbox": "fresh /demo/ context; capture the whole flow network, persist a change, reload, and inspect IndexedDB and localStorage namespaces"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Works offline after the first visit.",
+    "where": "landing facts, privacy page, README",
+    "test": "npm test -- --grep @claim:offline-reload",
+    "sandbox": "fresh /demo/ context; wait for service-worker control, set the browser offline, reload, and assert the sample plan and offline state"
+  },
+  {
+    "id": "free-and-paid",
+    "claim": "The free planner holds eight recipes; a valid $12 one-time license removes that limit.",
+    "where": "landing facts, purchase card, terms, README",
+    "test": "npm test -- --grep @claim:free-and-paid",
+    "sandbox": "enter through /demo/; assert production checkout identity, start with clean real data, reach the free limit, mock a valid product-license verdict, and add a ninth recipe"
+  }
+]

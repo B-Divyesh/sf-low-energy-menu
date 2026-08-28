@@ -1,5 +1,5 @@
-const CACHE = 'low-energy-menu-v2';
-const SHELL = ['/', '/index.html', '/privacy/', '/terms/', '/offline.html', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/assets/week-rhythm.avif', '/assets/week-rhythm.webp', '/assets/week-rhythm.jpg'];
+const CACHE = 'low-energy-menu-v3';
+const SHELL = ['/', '/index.html', '/demo/', '/privacy/', '/terms/', '/404.html', '/offline.html', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/assets/week-rhythm.avif', '/assets/week-rhythm.webp', '/assets/week-rhythm.jpg'];
 self.addEventListener('install', (event) => event.waitUntil((async () => {
   const cache = await caches.open(CACHE);
   await cache.addAll(SHELL);

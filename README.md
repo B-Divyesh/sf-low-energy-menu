@@ -1,8 +1,10 @@
 # Low-Energy Menu
 
-Low-Energy Menu is a local-first weekly dinner planner for households whose real constraint is the cook’s energy—not a shortage of recipe ideas. It turns familiar recipes, school or canteen meals, repeat fatigue, and leftovers into a week that is more likely to get cooked.
+Low-Energy Menu is a local-first weekly dinner planner for households balancing the cook’s energy, school meals, repeats, and leftovers.
 
 Live product: <https://low-energy-menu.sociobot.in>
+
+Try the isolated sample week: <https://low-energy-menu.sociobot.in/demo/>
 
 ## What it does
 
@@ -14,6 +16,8 @@ Live product: <https://low-energy-menu.sociobot.in>
 - Combines planned recipe ingredients into a downloadable grocery CSV.
 - Exports and imports a complete JSON backup.
 - Works offline after the first completed load and stores planning data in IndexedDB.
+
+The sample-data demo starts with three real-looking recipes and five planned nights. Its separate `low-energy-menu-demo` IndexedDB database never reads or changes the household planner. Use **Reset demo** to restore the sample or **Start for real** to discard it.
 
 The free planner supports eight recipe cards plus the current and next week. A $12 USD one-time household unlock adds unlimited recipe cards and full week history. Grocery/data export, warnings, and accessibility are never gated.
 
@@ -46,13 +50,13 @@ npm run preview
 
 ## Billing configuration
 
-Checkout and license verification use the Sociobot billing API; no payment provider is embedded. Staging defaults to `https://pilot-api.sociobot.in`. At release, set `VITE_BILLING_BASE_URL=https://api.sociobot.in` in the factory build environment. The product slug is `low-energy-menu`; there is no provider product ID in this repository.
+Checkout and license verification use `https://api.sociobot.in` by default; no payment provider is embedded. A staging build may explicitly set `VITE_BILLING_BASE_URL=https://pilot-api.sociobot.in`. The product slug is `low-energy-menu`; there is no provider product ID in this repository.
 
 ## Data and privacy
 
 Recipes and weekly plans stay in the browser’s IndexedDB. License tokens and their daily cached verdict use localStorage. There are no third-party runtime scripts, CDN fonts, ads, or behavioral analytics. See [`privacy/index.html`](privacy/index.html) and [`terms/index.html`](terms/index.html).
 
-The visual system, original generated-image prompt, and provenance are documented in [`.factory/design.md`](.factory/design.md). Scope and implementation verification are recorded in [`.factory/brief.json`](.factory/brief.json) and [`.factory/handoff.md`](.factory/handoff.md).
+Every public product claim and its browser test are listed in [`.factory/claims.json`](.factory/claims.json). Demo isolation is documented in [`.factory/demo.md`](.factory/demo.md). The visual system, original generated-image prompt, and provenance are in [`.factory/design.md`](.factory/design.md).
 
 ## License
 

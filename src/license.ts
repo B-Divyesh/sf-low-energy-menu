@@ -7,7 +7,7 @@ const SLUG = 'low-energy-menu';
 const TOKEN_KEY = `sb_license:${SLUG}`;
 const VERDICT_KEY = `sb_license_verdict:${SLUG}`;
 const DAY = 86_400_000;
-const BASE_URL = (import.meta.env.VITE_BILLING_BASE_URL as string | undefined) || 'https://pilot-api.sociobot.in';
+const BASE_URL = (import.meta.env.VITE_BILLING_BASE_URL as string | undefined) || 'https://api.sociobot.in';
 
 interface Verdict { valid: boolean; checkedAt: number }
 

@@ -1,12 +1,15 @@
 import './styles.css';
 import { addDays, availableLeftovers, dinnerName, effortLabel, ensureWeek, fromIso, groceryCsv, groceryRows, mondayOf, parseIngredients, validateImport, warningsForDay, weekDates } from './domain';
-import { eraseData, loadData, saveData } from './db';
+import { eraseData, loadData, saveData, useDemoStorage } from './db';
+import { createDemoData } from './demo';
 import { acceptLicenseFromUrl, cachedLicenseState, checkoutUrl, storeLicense, verifyLicense, type LicenseState } from './license';
 import type { AppData, DinnerPlan, Effort, Recipe } from './types';
 
 const mount = document.querySelector<HTMLDivElement>('#app');
 if (!mount) throw new Error('App mount not found');
 const app: HTMLDivElement = mount;
+const isDemo = location.pathname === '/demo' || location.pathname === '/demo/' || new URLSearchParams(location.search).get('demo') === '1';
+const isAppRoute = ['/', '/index.html', '/demo', '/demo/'].includes(location.pathname);
 
 let data: AppData;
 let activeWeek = mondayOf();
@@ -92,19 +95,21 @@ function render(): void {
   const planned = dates.filter((date) => week.days[date]?.dinner).length;
   const cooked = dates.filter((date) => week.days[date]?.outcome === 'cooked').length;
   const groceries = groceryRows(week, data.recipes).length;
+  document.title = isDemo ? 'Demo — Low-Energy Menu' : 'Low-Energy Menu — plan dinners around your energy';
   app.innerHTML = `
+    ${isDemo ? `<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved</strong><span>Changes stay separate from your household plan.</span><div><button type="button" data-action="reset-demo">Reset demo</button><button type="button" data-action="start-real">Start for real</button></div></aside>` : ''}
     <header class="app-header">
       <div class="topbar">
-        <a class="brand" href="/" aria-label="Low-Energy Menu home"><span class="brand-mark" aria-hidden="true">◒</span><span>Low-Energy Menu</span></a>
-        <nav class="header-nav" aria-label="Main navigation"><a href="#planner">Week</a><a href="#recipes">Recipes</a><a href="#data">Data & unlock</a></nav>
+        <a class="brand" href="${isDemo ? '/demo/' : '/'}" aria-label="Low-Energy Menu home"><span class="brand-mark" aria-hidden="true">◒</span><span>Low-Energy Menu</span></a>
+        <nav class="header-nav" aria-label="Main navigation"><a href="/demo/">Demo</a><a href="#planner">Week</a><a href="#recipes">Recipes</a><a href="#data">Data & unlock</a></nav>
         <span class="status-chip ${navigator.onLine ? '' : 'offline'}" id="network-status"><span class="status-dot" aria-hidden="true"></span>${navigator.onLine ? (offlineReady ? 'Ready offline' : 'Online') : 'Offline'}</span>
       </div>
       <div class="hero">
-        <div class="hero-copy"><p class="eyebrow">A week that respects the cook</p><h1>Plan for the energy you actually have.</h1><p class="lede">Match dinner effort to each day, spot school-meal repeats, carry leftovers forward, and leave with one honest grocery list.</p></div>
+        <div class="hero-copy"><p class="eyebrow">A week that respects the cook</p><h1>Plan dinners for the energy you have.</h1><p class="lede">For households balancing school meals, leftovers, and the cook’s changing energy.</p><div class="hero-action"><a class="primary-button" href="${isDemo ? '#planner' : '/demo/'}">${isDemo ? 'Explore this sample week' : 'Try it with sample data'}</a><span>${isDemo ? 'The planner is ready to use.' : 'See a planned week right away.'}</span></div><ul class="hero-facts"><li>Your plans stay in this browser.</li><li>Works offline after the first visit.</li><li>Free for 8 recipes. $12 once for more.</li></ul></div>
         <figure class="hero-art"><picture><source srcset="/assets/week-rhythm.avif" type="image/avif"><source srcset="/assets/week-rhythm.webp" type="image/webp"><img src="/assets/week-rhythm.jpg" width="1200" height="800" alt="Seven geometric place settings arranged around two linked leftover bowls" fetchpriority="high" decoding="async"></picture><figcaption class="hero-caption">Seven days · one household rhythm</figcaption></figure>
       </div>
     </header>
-    <main id="main" class="app-main">
+    <main id="main" class="app-main" tabindex="-1">
       ${storageError ? `<p class="error-banner" role="alert">${escapeHtml(storageError)}</p>` : ''}
       ${license.notice ? `<p class="notice-banner" role="status">${escapeHtml(license.notice)}</p>` : ''}
       <section id="planner" aria-labelledby="planner-title">
@@ -123,11 +128,11 @@ function render(): void {
         <aside class="side-stack" id="data" aria-label="Grocery, data, and purchase tools">
           <section class="utility-card"><h3>Grocery list</h3><p>${groceries ? `${groceries} combined ingredient line${groceries === 1 ? '' : 's'} from dinners cooked this week.` : 'Plan a recipe dinner with ingredients to create the list.'}</p><button class="secondary-button" type="button" data-action="grocery" ${groceries ? '' : 'disabled'}>Export grocery CSV</button></section>
           <section class="utility-card"><h3>Your data, portable</h3><p>Back up every recipe and week as JSON, or bring a backup onto this device.</p><div class="button-stack"><button class="secondary-button" type="button" data-action="export">Export backup</button><label class="file-label">Import backup<input type="file" data-action="import" accept="application/json,.json"></label><button class="danger-button" type="button" data-action="erase">Erase local data</button></div><p class="data-note">Stored only in this browser. Import replaces local planning data after confirmation.</p></section>
-          ${license.unlocked ? `<section class="utility-card"><span class="premium-stamp">✓ Household unlocked</span><h3>Unlimited planning</h3><p>Your one-time license unlocks unlimited recipes and full week history on this device.</p></section>` : `<section class="utility-card unlock-card"><p class="eyebrow">One-time unlock</p><h3>Keep the whole household rhythm</h3><p><span class="unlock-price">$12 USD</span> once. No subscription.</p><ul><li>Unlimited recipe cards</li><li>Full previous and future week history</li><li>Free export stays free</li></ul><a class="buy-button" href="${checkoutUrl}">Buy household unlock</a><form class="restore-form" data-action="restore"><label for="license-token">Have a license? Paste it</label><div class="restore-row"><input id="license-token" name="license" required autocomplete="off"><button class="secondary-button" type="submit">Restore</button></div></form><p><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a><br>Sociobot/Dodo is the merchant of record.</p></section>`}
+          ${license.unlocked ? `<section class="utility-card"><span class="premium-stamp">✓ Household unlocked</span><h3>Unlimited planning</h3><p>Your one-time license unlocks unlimited recipes and full week history on this device.</p></section>` : `<section class="utility-card unlock-card"><p class="eyebrow">One-time unlock</p><h3>Keep the whole household rhythm</h3><p><span class="unlock-price">$12 USD</span> once. No subscription.</p><ul><li>Unlimited recipe cards</li><li>Full previous and future week history</li><li>Free export stays free</li></ul><a class="buy-button" href="${checkoutUrl}">Buy household unlock</a>${isDemo ? '<p>Start for real before restoring a license. Demo actions never change your license.</p>' : '<form class="restore-form" data-action="restore"><label for="license-token">Have a license? Paste it</label><div class="restore-row"><input id="license-token" name="license" required autocomplete="off"><button class="secondary-button" type="submit">Restore</button></div></form>'}<p><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a><br>Sociobot/Dodo is the merchant of record.</p></section>`}
         </aside>
       </div>
     </main>
-    <footer class="app-footer"><div class="footer-inner"><span>Built for real weeks, not perfect ones. Illustration generated for this product.</span><nav class="footer-links" aria-label="Legal"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://github.com/B-Divyesh/sf-low-energy-menu">Source</a></nav></div></footer>
+    <footer class="app-footer"><div class="footer-inner"><span>Dinner planning for real weeks. Built by Param Factory · repair-1. Illustration generated for this product.</span><nav class="footer-links" aria-label="Legal"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://github.com/B-Divyesh/sf-low-energy-menu" rel="external">Source (external)</a></nav></div></footer>
     <div class="toast-region" aria-live="polite" aria-atomic="true">${toastMessage ? `<div class="toast"><span>${escapeHtml(toastMessage)}</span><button type="button" data-action="toast">${updateWorker ? 'Reload' : 'Dismiss'}</button></div>` : ''}</div>
     <dialog id="recipe-dialog" aria-labelledby="recipe-dialog-title"><form class="dialog-form" id="recipe-form"><input type="hidden" name="id"><h2 id="recipe-dialog-title">Add a recipe</h2><p class="dialog-intro">Record what your household already cooks. Tags and allergens are your own notes, not verified claims.</p>
       <div class="form-grid"><div class="form-field full"><label for="recipe-name">Recipe name</label><input id="recipe-name" name="name" required maxlength="80" autocomplete="off"></div>
@@ -193,6 +198,20 @@ function openRecipeDialog(id?: string): void {
 }
 
 function bindEvents(): void {
+  const skipLink = document.querySelector<HTMLAnchorElement>('.skip-link');
+  if (skipLink) skipLink.onclick = (event) => {
+    event.preventDefault();
+    document.querySelector<HTMLElement>('#main')?.focus();
+    history.replaceState(history.state, '', `${location.pathname}${location.search}#main`);
+  };
+  document.querySelector('[data-action="reset-demo"]')?.addEventListener('click', async () => {
+    await eraseData();
+    location.replace('/demo/');
+  });
+  document.querySelector('[data-action="start-real"]')?.addEventListener('click', async () => {
+    await eraseData();
+    location.href = '/';
+  });
   document.querySelectorAll<HTMLButtonElement>('[data-action="energy"]').forEach((button) => button.addEventListener('click', () => {
     ensureWeek(data, activeWeek).days[button.dataset.date!]!.energy = Number(button.dataset.value) as Effort;
     void persist(); render();
@@ -262,7 +281,7 @@ function bindEvents(): void {
       const imported = validateImport(JSON.parse(await file.text()));
       if (!confirm(`Replace local data with “${file.name}”? This contains ${imported.recipes.length} recipes.`)) { input.value = ''; return; }
       data = imported; activeWeek = mondayOf(); await persist('Backup imported.'); render();
-    } catch (error) { showToast(error instanceof Error ? error.message : 'That backup could not be imported.'); input.value = ''; }
+    } catch { showToast('That file is not a valid Low-Energy Menu backup. Choose a JSON backup exported by this app.'); input.value = ''; }
   });
   document.querySelector('[data-action="erase"]')?.addEventListener('click', async () => {
     if (!confirm('Erase every local recipe and weekly plan on this device? Export a backup first if you may need it.')) return;
@@ -299,14 +318,24 @@ async function registerServiceWorker(): Promise<void> {
 }
 
 async function start(): Promise<void> {
-  acceptLicenseFromUrl();
-  license = cachedLicenseState();
-  try { data = await loadData(); ensureWeek(data, activeWeek); await saveData(data); }
+  if (!isAppRoute) {
+    document.title = 'Page not found — Low-Energy Menu';
+    app.innerHTML = `<main id="main" class="not-found"><p class="eyebrow">404 · misplaced recipe card</p><h1>This page is not on the menu.</h1><p>The address may be wrong, or the page may have moved.</p><a class="primary-button" href="/">Return to the planner</a></main>`;
+    return;
+  }
+  useDemoStorage(isDemo);
+  if (!isDemo) {
+    acceptLicenseFromUrl();
+    license = cachedLicenseState();
+  } else {
+    license = { unlocked: false, notice: '' };
+  }
+  try { data = await loadData(isDemo ? createDemoData : undefined); ensureWeek(data, activeWeek); await saveData(data); }
   catch { data = { version: 1, recipes: [], weeks: {}, updatedAt: new Date().toISOString() }; ensureWeek(data, activeWeek); storageError = 'Local storage is unavailable. Changes may not survive this tab.'; }
   render();
   addEventListener('online', updateNetworkStatus); addEventListener('offline', updateNetworkStatus);
   void registerServiceWorker();
-  if (localStorage.getItem('sb_license:low-energy-menu')) { license = await verifyLicense(); render(); }
+  if (!isDemo && localStorage.getItem('sb_license:low-energy-menu')) { license = await verifyLicense(); render(); }
 }
 
 void start();
