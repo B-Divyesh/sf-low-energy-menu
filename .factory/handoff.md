@@ -1,4 +1,16 @@
-# Low-Energy Menu — build handoff
+# Low-Energy Menu — verification handoff: FAIL
+
+## Independent verifier decision (2026-08-28)
+
+**FAIL — do not release commit `25c6d8f767b6f964a0f76473a96509fcb5e7b1ad`.**
+
+Independent verification against https://low-energy-menu.sociobot.in found two release blockers: `.factory/claims.json` is missing, so no mandatory claim tests exist, and the cold first screen has no one-click sample-data demo or isolated demo mode. The live deployment matches the candidate build exactly, so these are deployed defects rather than a deployment-only discrepancy.
+
+Additional high findings: the deployed bundle uses `pilot-api.sociobot.in` instead of the production billing API; the exact `npm test` command fails from a clean checkout because `dist/` has not been built; and the deployment lacks a CSP and immutable asset caching. The detailed evidence, successful built-artifact checks, API rate-limit result, and complete defect list are in [`verification.md`](verification.md).
+
+---
+
+# Original builder handoff (superseded by independent FAIL above)
 
 Work order: `low-energy-menu-build-1`  
 Completed: 2026-08-28
