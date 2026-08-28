@@ -14,7 +14,7 @@ The light treatment is the primary, explicitly painted like uncoated recipe pape
 | `--paper-strong` | `#FFFDF8` | `#19262E` | Raised working surface |
 | `--ink` | `#172B35` | `#F6F0E4` | Primary text |
 | `--ink-muted` | `#52636A` | `#B7C5C8` | Secondary text |
-| `--tomato` | `#C84630` | `#FF826D` | Primary action / high effort |
+| `--tomato` | `#A93B2B` | `#FF826D` | Primary action / high effort |
 | `--tomato-ink` | `#FFFFFF` | `#20100D` | Accent contrast |
 | `--corn` | `#E3A627` | `#F2C34F` | Caution / medium effort |
 | `--leaf` | `#28735E` | `#63C6A5` | Ready / low effort / success |

@@ -1,0 +1,9 @@
+{
+  "asset": "week-rhythm.png",
+  "generated_at": "2026-08-28",
+  "generator": "/opt/fleet/lib/gen-image.sh using the Param Factory Azure deployment",
+  "size": "1536x1024",
+  "quality": "medium",
+  "prompt": "Use case: stylized-concept. Asset type: responsive product hero and first-run empty state. Primary request: a top-down generative geometric illustration of a household's seven-day dinner rhythm. Scene: seven irregular paper placemats arranged like a loose weekly orbit around simple ceramic plate circles, with two small linked bowls suggesting leftovers and tiny one, two, and three dot energy markers. Style: tactile cut-paper editorial collage with subtle screenprint grain, crisp purposeful geometry, no photoreal food. Composition: wide landscape, visual weight centered and to the right, calm negative space, no interface screenshot. Lighting: soft kitchen-window light with shallow paper shadows. Palette: warm recipe paper, blue-black ink, tomato red, corn yellow, leaf green. Materials: uncoated paper, matte ceramic, graphite ticks. Constraints: no people, no hands, no brands, no letters, no numbers, no text, no watermark, no logos, no gradient background, no uncanny objects.",
+  "review": "Accepted. Seven plate settings and two linked bowls are clear; no text, watermark, logo, brands, anatomy, or visible seams. Palette matches the visual thesis."
+}
