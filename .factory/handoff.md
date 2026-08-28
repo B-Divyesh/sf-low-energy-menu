@@ -33,8 +33,8 @@ Verification completed against the production build:
 - Playwright 1.58.2: 8/8 pass across desktop Chromium and a 390 × 844 Chromium mobile viewport. Covered clean console/landmarks/legal routes, recipe-to-plan-to-warning-to-grocery flow, full axe scan, refresh persistence, service-worker readiness, and a real `context.setOffline(true)` reload.
 - Offline stress check: the persistence/offline test repeated three times per viewport (6/6 pass) after hardening cache matching for static hosts that emit `Vary: Origin`.
 - Axe: 0 serious or critical violations; the full color-contrast rule was enabled.
-- Lighthouse 13 mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100. FCP 0.9 s, LCP 1.8 s, TBT 0 ms, CLS 0.001.
-- Production bundle: initial app JavaScript 25.8 KB raw / 8.9 KB gzip; CSS 15.1 KB raw / 4.2 KB gzip; no web fonts; hero AVIF 60 KB. These are below the 200 KB JS, 50 KB CSS, 120 KB font, and 300 KB hero budgets.
+- Lighthouse 13 mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100. FCP 0.9 s, LCP 1.7 s, TBT 0 ms, CLS 0.001.
+- Production bundle: initial app JavaScript 26.7 KB raw / 9.1 KB gzip; CSS 15.2 KB raw / 4.2 KB gzip; no web fonts; hero AVIF 60 KB. These are below the 200 KB JS, 50 KB CSS, 120 KB font, and 300 KB hero budgets.
 - Manual visual review completed at 1440 × 1000 and 390 × 844. One `<h1>`, `<main>`, `lang="en"`, title, meaningful image alt, 44 px controls, clear focus states, dark treatment, and responsive stacking are present.
 
 ## Deployment notes
