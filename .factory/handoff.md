@@ -1,62 +1,73 @@
-# Low-Energy Menu — verification handoff: FAIL
+# Low-Energy Menu — repair handoff
 
-## Independent verifier decision (2026-08-28)
+Work order: `low-energy-menu-repair-1`
+Verifier report: `f8db39d1e2dc2323516de8c7b6b52b9e19bf02a0`
+Rejected candidate: `25c6d8f767b6f964a0f76473a96509fcb5e7b1ad`
+Repair commits: `fdd8649`, `69ab762`
+Completed and deployed: 2026-08-28
 
-**FAIL — do not release commit `25c6d8f767b6f964a0f76473a96509fcb5e7b1ad`.**
+## Release decision
 
-Independent verification against https://low-energy-menu.sociobot.in found two release blockers: `.factory/claims.json` is missing, so no mandatory claim tests exist, and the cold first screen has no one-click sample-data demo or isolated demo mode. The live deployment matches the candidate build exactly, so these are deployed defects rather than a deployment-only discrepancy.
+All release-blocking, high, and medium findings in `.factory/verification.md` are repaired. The production PWA is deployed at <https://low-energy-menu.sociobot.in>; the isolated demo is at <https://low-energy-menu.sociobot.in/demo/>.
 
-Additional high findings: the deployed bundle uses `pilot-api.sociobot.in` instead of the production billing API; the exact `npm test` command fails from a clean checkout because `dist/` has not been built; and the deployment lacks a CSP and immutable asset caching. The detailed evidence, successful built-artifact checks, API rate-limit result, and complete defect list are in [`verification.md`](verification.md).
+## Finding-by-finding repair
 
----
+| Verifier finding | Root cause | Repair and exact regression |
+| --- | --- | --- |
+| Missing claims contract | Public claims were not enumerated. | Added `.factory/claims.json` with seven observable claims. Each has exactly one `@claim:<id>` Playwright test and an independently runnable `npm test -- --grep @claim:<id>` command. A release unit test rejects missing or duplicate tags. |
+| No one-click isolated demo | The only app route always opened the real `low-energy-menu` database. | Added `/demo/`, a first-screen **Try it with sample data** action, three recipes and five planned nights, a persistent banner, reset/start-real controls, and the separate `low-energy-menu-demo` database. The demo test proves real data is hidden and preserved, demo changes persist only in demo, reset restores the seed, and Start for real deletes demo data. `.factory/demo.md` documents the sandbox. |
+| Pilot billing in production | `pilot-api.sociobot.in` was the source default. | The default is now `https://api.sociobot.in`; pilot requires an explicit staging environment override. Build-time and browser tests reject the pilot origin and assert the production checkout URL. |
+| `npm test` failed clean | Playwright started `vite preview` before `dist/` existed. | `npm test` and `npm run test:e2e` build first. This was verified after `npm ci` with no pre-existing `dist`. |
+| No CSP or immutable asset caching | No host configuration shipped in the built artifact. | Added `public/staticwebapp.config.json`, so Vite copies policy into `dist/`. It sets a restrictive CSP, security headers, one-year immutable hashed-asset caching, no-cache service worker delivery, manifest MIME, and a 404 override. A regression reads `dist/staticwebapp.config.json`, not the source location. |
+| No real designed 404 | Unknown paths fell through to the planner shell with 200. | Added an on-thesis `404.html`, an app-shell fallback for local preview, and an Azure 404 response override. Live `/does-not-exist` returns HTTP 404 with “This page is not on the menu.” |
+| Wrong manifest MIME | The host inferred `.webmanifest` as octet-stream. | Declared `.webmanifest` as `application/manifest+json`; live response confirms it. |
+| Raw JSON parser error | The import handler surfaced `JSON.parse` text. | Invalid files now say: “That file is not a valid Low-Energy Menu backup. Choose a JSON backup exported by this app.” Browser coverage uploads malformed JSON and asserts this recovery instruction. |
 
-# Original builder handoff (superseded by independent FAIL above)
+Expanded QA also found and fixed dark-theme contrast on the fixed dark header and purchase card. Axe now scans home and demo in both color schemes.
 
-Work order: `low-energy-menu-build-1`  
-Completed: 2026-08-28
+## Verification evidence
 
-## What shipped
+Clean local verification:
 
-- A complete seven-day planner with a low/medium/high cook-energy budget per day, school/canteen meal context, recipe dinners, available-leftover dinners, flexible nights, and cooked/changed outcome tracking.
-- User-authored recipe cards with effort, extra leftover dinners, free-form dietary/allergen tags, ingredient quantities, and practical notes. There is no scraped or generated recipe corpus.
-- Plain-language checks for effort mismatch, overlap with school food, close meal repetition, and unavailable leftovers. The interface explicitly says these are planning prompts rather than nutrition, allergy, medical, or food-safety advice.
-- Aggregated grocery CSV export plus full JSON backup/import and confirmed local erasure.
-- IndexedDB persistence, a versioned service worker, dynamically precached hashed build assets, offline navigation fallback, install manifest, 192/512 maskable-capable icons, and an in-app update notice.
-- A useful free tier (eight recipes, current and next week) and a $12 USD one-time household unlock (unlimited recipes and full week history). Checkout, query-string license capture, exact `sb_license:low-energy-menu` storage, optimistic cached unlock, at-most-daily verification, invalid-license handling, and paste-to-restore follow the Sociobot contract. Export, accessibility, and safety checks remain free.
-- Responsive 390 px/mobile and desktop treatments, light/dark color schemes, keyboard paths, visible focus, reduced-motion handling, loading/empty/error/offline states, privacy and terms pages, and product documentation.
-- Original generated week-rhythm artwork and hand-authored app icon. The image prompt, review, generation metadata, and license/provenance are recorded in `.factory/design.md` and `assets/src/`. Shipping formats are AVIF (60 KB), WebP (76 KB), and JPEG fallback (124 KB).
+- `npm ci` — 61 packages installed; 0 vulnerabilities.
+- `npm test` — pass. Vite production build, 7/7 Vitest unit/release tests, and 24/24 Playwright tests across desktop Chromium and 390×844 mobile.
+- `npm run typecheck` — pass with TypeScript 5.9.2.
+- `npm audit --audit-level=high` — 0 vulnerabilities.
+- All seven exact claim commands from `.factory/claims.json` — pass independently on both browser projects.
+- Axe 4.10 — zero serious or critical findings on `/` and `/demo/` in light and dark modes.
+- Keyboard/reduced-motion/mobile regression — skip link moves focus to main, recipe dialog receives and releases focus, narrow pages do not overflow, and reduced-motion durations are effectively zero.
+- Offline/update regression — service-worker control established, browser network disabled, `/demo/` reloaded with sample data and visible Offline state.
+- Privacy regression — full demo flow made only same-origin requests; no external runtime scripts or styles; demo database present, real database and real license key absent.
+- Lighthouse 13 simulated mobile on production build: Performance 99, Accessibility 100, Best Practices 100, SEO 100; FCP 1.1 s, LCP 1.7 s, TBT 110 ms, CLS 0.001.
+- Build budgets: app JS 30.47 KB raw / 10.25 KB gzip; CSS 16.59 KB raw / 4.49 KB gzip; no web fonts; hero AVIF 60 KB.
 
-## How to run and verify
+Live verification after deployment:
+
+- Factory `verify-url.sh` on `/` and `/demo/`: HTTP 200, expected titles, `lang=en`, one H1, main landmark, no missing alt text, no unlabeled buttons, and no console errors.
+- Fresh 390×844 context: no horizontal overflow; sample present; service worker controlled the page; offline reload retained sample data and showed Offline; no external runtime requests or console errors.
+- Root response includes CSP, Referrer-Policy, X-Content-Type-Options, and Permissions-Policy.
+- Hashed JS response: `Cache-Control: public, max-age=31536000, immutable`.
+- Manifest response: `Content-Type: application/manifest+json`.
+- Unknown route response: HTTP 404 with the designed 404 content.
+- Local and live `main-B1uc17gS.js` SHA-256 both equal `c9e3ae501470df1368544553736f84e048a31ed8f672943263303e6d64e0cc1d`.
+- Live bundle contains `https://api.sociobot.in` and no pilot origin. A single invalid production verification request returned `200`, `Cache-Control: no-store`, and `{ "valid": false, "reason": "invalid" }`.
+
+## Run and deploy
 
 ```sh
 npm ci
 npm test
+npm run typecheck
 npm run build
 npm run preview
 ```
 
-`npm run build` is the deployment command. It produces `dist/index.html`, `dist/privacy/index.html`, and `dist/terms/index.html` at the expected static root.
+The static artifact remains `dist/` with `dist/index.html` at its root. Deployment used:
 
-Verification completed against the production build:
+```sh
+/opt/fleet/lib/deploy-static.sh low-energy-menu /work/repo/dist
+```
 
-- TypeScript: `npx tsc --noEmit` — pass.
-- Dependency audit: `npm audit` — 0 vulnerabilities.
-- Unit suite: 4/4 pass (warnings, leftovers, grocery aggregation, ingredient parsing).
-- Playwright 1.58.2: 8/8 pass across desktop Chromium and a 390 × 844 Chromium mobile viewport. Covered clean console/landmarks/legal routes, recipe-to-plan-to-warning-to-grocery flow, full axe scan, refresh persistence, service-worker readiness, and a real `context.setOffline(true)` reload.
-- Offline stress check: the persistence/offline test repeated three times per viewport (6/6 pass) after hardening cache matching for static hosts that emit `Vary: Origin`.
-- Axe: 0 serious or critical violations; the full color-contrast rule was enabled.
-- Lighthouse 13 mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100. FCP 0.9 s, LCP 1.7 s, TBT 0 ms, CLS 0.001.
-- Production bundle: initial app JavaScript 26.7 KB raw / 9.1 KB gzip; CSS 15.2 KB raw / 4.2 KB gzip; no web fonts; hero AVIF 60 KB. These are below the 200 KB JS, 50 KB CSS, 120 KB font, and 300 KB hero budgets.
-- Manual visual review completed at 1440 × 1000 and 390 × 844. One `<h1>`, `<main>`, `lang="en"`, title, meaningful image alt, 44 px controls, clear focus states, dark treatment, and responsive stacking are present.
+## Known gaps
 
-## Deployment notes
-
-- Staging intentionally defaults to `https://pilot-api.sociobot.in`. Set `VITE_BILLING_BASE_URL=https://api.sociobot.in` for the production factory build after the product is registered. No billing-provider product ID is hardcoded.
-- Serve the contents of `dist/` over HTTPS. Direct `/privacy/` and `/terms/` paths are real built documents and do not require an SPA rewrite.
-- The service worker and license verification need the deployed origin allowed by the Sociobot billing API as specified by the factory contract.
-
-## Known gaps and next steps
-
-- Billing registration and an end-to-end paid checkout with the factory’s test product are external to this repository. Once registered, run one staging purchase with the documented `4242 4242 4242 4242` card and confirm the return URL.
-- Success-measure evidence (four cooked nights for three weeks and fewer than one effort abandonment per week) requires a household pilot; the app records the necessary cooked/changed outcomes but does not transmit analytics.
-- Data is deliberately device-local with manual backup rather than cloud sync. Browser/site-data clearing can remove it, which is disclosed in-product and in the privacy policy.
+No release-blocking product gap remains. A real paid checkout was not performed because it would create a financial transaction; the production endpoint identity, invalid-token response, cached-license behavior, and mocked valid-license unlock are covered. Household success-measure evidence still requires the planned multi-week pilot described in the researched brief.
