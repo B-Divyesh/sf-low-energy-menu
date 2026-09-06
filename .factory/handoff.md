@@ -4,6 +4,8 @@ Status: deployed and verified.
 
 Implementation commit: `6c637628f362c18ed08c1482dd9f101d2a9533c9`
 
+Verification documentation commit: `43e977c657cd2095484edd206639ca18ce407cb6`
+
 Prior strict-review documentation commit: `d82ba7412229bd9421a3605fb813ebf1181e1280`
 
 Live URL: <https://low-energy-menu.sociobot.in>
