@@ -1,43 +1,47 @@
-# Low-Energy Menu — verification 4 handoff
+# Low-Energy Menu — strict review 1 handoff
 
-Work order: `low-energy-menu-verify-4`
+Work order: `low-energy-menu-review-1`
 
-Release decision: **PASS**
+Release decision: **FAIL**
+
+Finding count: **1**
+
+Untested public claim count: **0**
 
 Implementation reviewed: `d3e96f1ba36ca2eee3697f96695362a0fb7e274d`
-Release documentation reviewed: `826b0bac909ca78c6751af281fd506eb4bebd6ac`
+
+Documentation reviewed: `43ca91ebf5be99b47b49e96f4486400b981d59ea`
+
 Live URL: <https://low-energy-menu.sociobot.in>
 
 ## What was done
 
-Independent QA was completed without changing product code. The live deployed JavaScript matches the reviewed implementation (`1a4fd615c3fd072c8a75fde3190e71616ea94c4d9eaa2b2425259c1b70c24893`). The report is `.factory/verification-4.md`.
+A fresh strict review was completed without changing product code. The live deployment matches the implementation candidate byte-for-byte for its main JavaScript bundle.
 
-Verification confirmed the repairs from verification 3: all twelve public claims are independently declared and passing; first-time license outages fail closed while an already verified cached license works offline; grocery wording matches planned-export behavior; phone targets meet 44 px; required landing sections, plain 404 heading, recipe required label, and legal metadata are present.
+The live product passed fresh phone and desktop first-screen checks, one-click demo isolation/reset/start-real behavior, all normal planner paths, checkout inspection, invalid/outage/recovery license paths, offline reload, accessibility, privacy, route, header, rate-limit, and performance checks. All eight findings from verification 3 remain fixed.
 
-Fresh desktop and phone live checks confirmed the job, audience, and sample first action before scrolling; the realistic isolated demo; reset/start-real behavior; normal, invalid, outage, and recovery license behavior; offline reload; keyboard/dialog focus; reduced motion; 200% reflow; privacy isolation; legal and 404 routes; headers; rate limiting; and the hosted checkout route. No real payment was submitted.
+The release fails on one test-reliability finding. The exact `week-history` claim command intermittently fails in mobile Chromium when the mocked valid verification request ends in `net::ERR_FAILED`. It failed twice across 11 exact runs and passed nine times. The public week-history and license behavior passed independently, but the claims contract requires the command itself to be reliable.
 
-## Run and verify
+Full evidence and remediation guidance are in `.factory/review-1.md`. Reproduction artifacts are under `/work/.evidence/low-energy-menu-review-1/`.
+
+## Verification summary
 
 ```sh
 npm ci
+npm test -- --grep @claim:<id>  # each of 12 manifest entries
 npm test
 npm run typecheck
 npm run build
 npm audit --audit-level=high
 ```
 
-All exact commands in `.factory/claims.json` were also run individually. Every claim passed in desktop and mobile Chromium (12 × 2). The complete test suite passed: 7 Vitest tests and 42 Playwright tests. Build output is `dist/` with `dist/index.html` at its root.
+- Eleven claim commands passed on first run.
+- `week-history` failed intermittently: 2 failures and 9 passes across 11 exact invocations.
+- The complete suite passed once: 7/7 Vitest and 42/42 Playwright tests.
+- Typecheck, build, and audit passed.
+- Fresh Lighthouse: 100/100/100/100; LCP 1.3 s, TBT 60 ms, CLS 0.001.
+- `verify-url.sh` passed the four 200 routes; live axe found no serious/critical issues on all public routes and the expected 404 in light and dark.
 
-Live checks:
+## Required next step
 
-- `verify-url.sh` passed for `/`, `/demo/`, `/privacy/`, and `/terms/`.
-- Axe found zero serious/critical issues on five public routes in both light and dark themes.
-- Lighthouse 13.4.1 mobile: 100 Performance, 100 Accessibility, 100 Best Practices, 100 SEO.
-
-Evidence is in `/work/.evidence/low-energy-menu-verify-4/`; the factory-facing copies are `/work/.evidence/qa-report.md` and `/work/.evidence/qa-result.json`.
-
-## Known limits and next steps
-
-- Checkout was inspected but no paid transaction was submitted.
-- The three-week household success measure needs a real household pilot; the app does not claim the outcome.
-- This is a static local-first PWA. It has no product backend, tenant database, or shared PostgreSQL dependency.
+Make the mocked paid-history test deterministic in mobile Chromium, preferably by isolating it from service-worker interception/timing. Re-run every exact claim command and request a fresh independent review. No product behavior repair was indicated by this review.
