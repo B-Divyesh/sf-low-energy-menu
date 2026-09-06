@@ -338,10 +338,10 @@ test('shows a designed not-found route and plain import recovery', async ({ page
   await expect(page.getByText('That file is not a valid Low-Energy Menu backup. Choose a JSON backup exported by this app.')).toBeVisible();
 });
 
-test('has no serious or critical accessibility violations on home and demo', async ({ page }) => {
+test('has no serious or critical accessibility violations on every public route', async ({ page }) => {
   for (const colorScheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme });
-    for (const route of ['/', '/demo/']) {
+    for (const route of ['/', '/demo/', '/privacy/', '/terms/', '/does-not-exist']) {
       await page.goto(route);
       const results = await new AxeBuilder({ page: page as never }).analyze();
       expect(results.violations.filter((item) => ['serious', 'critical'].includes(item.impact || ''))).toEqual([]);

@@ -214,6 +214,7 @@ dialog::backdrop { background: rgb(11 25 31 / 72%); backdrop-filter: blur(3px); 
 .legal-page p { line-height: 1.65; }
 .back-link { display: inline-flex; min-height: 44px; align-items: center; font-weight: 800; }
 .not-found { min-height: 100vh; padding: 15vh max(24px, env(safe-area-inset-left)); background: #172b35; color: #f6f0e4; }
+.not-found .eyebrow { color: #f4c55d; }
 .not-found h1 { max-width: 10ch; }
 .not-found p:not(.eyebrow) { max-width: 44ch; margin: 24px 0; color: #d9e0e0; font-size: 1.15rem; }
 
