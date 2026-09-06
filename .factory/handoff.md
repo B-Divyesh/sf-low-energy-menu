@@ -1,96 +1,51 @@
-# Low-Energy Menu — repair handoff
+# Low-Energy Menu — verification 3 handoff
 
-Work order: `low-energy-menu-repair-2`
+Work order: `low-energy-menu-verify-3`
 
-Release decision: **PASS**
-Implementation commit: `9f9959af6749ca21253cd04fafee410848829d62` (`fix: prove history and outcome claims`)
+Release decision: **FAIL**
 
-The HTTPS PWA at <https://low-energy-menu.sociobot.in> now includes the repaired implementation. The code commit above is the deployed product image; this handoff is committed afterward as documentation only.
+Implementation reviewed: `9f9959af6749ca21253cd04fafee410848829d62`
 
-## What changed
+Documentation baseline: `383e006a34c9ab630e8095cac23511fac93243e4`
+Live URL: <https://low-energy-menu.sociobot.in>
 
-The independent verifier’s sole blocker was correct: week-history and outcome-tracking promises were public, but absent from `.factory/claims.json` and from their own demo-entry outcome tests.
+No product code was changed. The full independent report is in `.factory/verification-3.md`.
 
-| Finding | Cause | Repair and regression evidence |
-| --- | --- | --- |
-| Week-history promise unlisted and untested | The existing free/current-next and licensed/all-week navigation rules had no claim contract. | Added `week-history`. Its browser flow starts at `/demo/`, proves the free previous and beyond-next controls do not change the displayed week, then starts for real, mocks a valid product-license verdict, and moves before and after the current week. |
-| Outcome-tracking promise unlisted and incomplete in the visible summary | Outcome state persisted, but the summary exposed only cooked dinners. | Added a visible weekly **changed** count beside **cooked**. Added `outcome-tracking`, which marks a sample dinner cooked, reloads, marks it changed, and proves both counts and button states persist. |
-| Plain-words minor copy issues | Some labels used mood or metaphor wording. | Replaced them with task names such as “Weekly dinner planner”, “Plan this week’s dinners”, “Your recipes”, and “Add more recipes and weeks”. Updated the copy audit. |
+## Verification completed
 
-`.factory/claims.json` now has nine claims. The release test still rejects any claim without exactly one `@claim:<id>` browser test. `.factory/catalog-description.txt` is verb-first, 83 characters, and is copied unchanged to `/work/.evidence/catalog-description.txt`.
+- Ran `npm ci` in a fresh clone, then every exact command in `.factory/claims.json`.
+- Ran `npm test`, `npm run typecheck`, `npm run build`, and `npm audit --audit-level=high`.
+- Exercised fresh desktop and 390×844 phone flows, sample isolation/reset/start-real, normal planning, invalid import and license handling, keyboard/focus, reduced motion, 200% text, axe, offline reload, links, legal routes, the deliberate 404, headers, checkout, and API rate limiting.
+- Ran live Lighthouse 13.4.1 and compared the built candidate with live HTML, JS, CSS, service worker, and manifest.
+- Proved the fixes requested by verification 1 and 2, including the new week-history and outcome-tracking claims.
 
-## Earlier verification findings and current disposition
+## Results
 
-All findings from `.factory/verification.md` and `.factory/verification-2.md` are addressed or still covered:
+All nine declared claim commands pass in both browser projects. The full suite passes 7/7 unit/release tests and 28/28 browser tests. Typecheck, build, audit, live offline reload, live axe, headers, links, and Lighthouse 100/100/100/100 also pass. The deployed artifact matches implementation `9f9959a`.
 
-- Claims contract and isolated one-click demo: present; demo uses only `low-energy-menu-demo` IndexedDB, has its persistent label/reset/start-real controls, and preserves the real namespace.
-- Production billing origin, clean `npm test`, host CSP/caching, manifest MIME, real HTTP 404, and plain invalid-import recovery: unchanged and covered by the existing release/browser tests.
-- Dark theme, keyboard, reduced motion, phone layout, privacy, offline reload, and legal routes: unchanged and passed the full suite and live checks below.
-- This repair closes the only blocker recorded in `verification-2.md`; no new product defect was found.
+Acceptance still fails with 8 findings and 3 untested public claims:
 
-## Clean local verification
+1. Close-repetition warnings, unavailable-leftover warnings, and the exact three-recipe/five-night demo promise lack adequate claim tests.
+2. A newly pasted arbitrary token unlocks paid features if its first verification request is unavailable.
+3. The grocery panel says rows come from cooked dinners, but exports planned recipe dinners.
+4. Demo controls are 40 px high and the mobile home link is 36 px high, below the 44 px contract.
+5. The required three-step How it works and privacy/non-goals landing sections are absent.
+6. The 404 H1 uses the menu metaphor prohibited by the plain-words contract.
+7. The required recipe-name field is not visibly identified as required.
+8. Privacy and Terms omit required Open Graph, Twitter, and Apple touch metadata.
 
-From the documented clean setup:
-
-```sh
-npm ci
-```
-
-installed 61 packages with `npm audit --audit-level=high` reporting zero vulnerabilities. Every exact claim command then passed in both Chromium projects:
-
-```sh
-npm test -- --grep @claim:demo-sandbox
-npm test -- --grep @claim:planning-checks
-npm test -- --grep @claim:grocery-csv
-npm test -- --grep @claim:backup-roundtrip
-npm test -- --grep @claim:local-private
-npm test -- --grep @claim:offline-reload
-npm test -- --grep @claim:free-and-paid
-npm test -- --grep @claim:week-history
-npm test -- --grep @claim:outcome-tracking
-```
-
-- `npm test` — pass: 7/7 Vitest unit/release tests and 28/28 Playwright tests (desktop Chromium plus 390×844 mobile).
-- `npm run typecheck` — pass.
-- `npm run build` — pass; output is `dist/` with root `index.html`.
-- Build budget: main JS 30.61 KB raw / 10.24 KB gzip; CSS 16.59 KB raw / 4.49 KB gzip; hero AVIF remains about 60 KB. No external font or runtime script is shipped.
-- Local Playwright coverage includes normal, invalid-import recovery, free/paid boundaries, demo isolation/reset, keyboard and dialog focus, reduced motion, mobile overflow, offline reload, and axe scans in both light and dark schemes.
-
-## Deployment and live verification
-
-Deployed the production artifact with:
-
-```sh
-/opt/fleet/lib/deploy-static.sh low-energy-menu /work/repo/dist
-```
-
-The wrapper completed successfully. Local and live `assets/main-C-L6EanZ.js` SHA-256 both equal:
-
-```text
-c64ff4134b57fdb6f127b97e2da99f7be2aa44a7eb705a00eb02bed7f05690d6
-```
-
-- `verify-url.sh` passed for `/` and `/demo/`: 200 responses, expected route titles, `lang=en`, one H1, a main landmark, alt text, labelled buttons, and no console errors.
-- New storage-free desktop and 390×844 phone browser contexts both showed the job (“Plan dinners for the energy you have”), its household audience, and **Try it with sample data** before scrolling. Desktop then created a real recipe, entered the sample, confirmed the persistent sample label and sample plan, reset it, and returned to the untouched real recipe. Phone had no horizontal overflow.
-- A separate fresh mobile context waited for service-worker control, went offline, reloaded `/demo/`, and retained the sample plan with the visible **Offline** state.
-- Live axe scans found zero serious or critical violations on `/` and `/demo/` in light and dark color schemes.
-- Lighthouse 13.4.1 live mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100; FCP 0.9 s, LCP 1.4 s, TBT 20 ms, CLS 0.001.
-- Live responses include CSP, HSTS, `Referrer-Policy`, `X-Content-Type-Options`, and Permissions Policy. The hashed JS is immutable for one year, `sw.js` is no-cache, the manifest is `application/manifest+json`, and an unknown route is a designed HTTP 404.
-- The demo flow made no third-party runtime requests or console errors. The public invalid-license verifier accepted 30 simultaneous requests and returned 429 with `Retry-After: 4` for the next 10, confirming the live allowance and limiter.
-- The advertised checkout endpoint is registered and redirects to the hosted merchant checkout. No purchase was submitted.
-
-## Known gaps and next steps
-
-- A real paid purchase and live entitlement were not exercised because that would create a financial transaction. The checkout registration, production origin, invalid-token response, and mocked valid-license behavior are verified; real payment remains the billing operator’s responsibility.
-- The researched success measure still needs the intended three-week household pilot. The product now records both outcomes locally but does not claim pilot results.
-- No backend, tenant, or shared database exists in this static local-first product. Household planning data remains in browser IndexedDB; the only production API used is optional license checkout/verification.
-
-## Run locally
+## Reproduce the main blockers
 
 ```sh
 npm ci
 npm test
 npm run typecheck
 npm run build
-npm run preview
+npm audit --audit-level=high
 ```
+
+To reproduce the paid-boundary defect, open a fresh real-mode browser, block `https://api.sociobot.in/**`, paste any new token, and select **Restore**. The app reports offline fallback, displays **Household unlocked**, and opens previous-week navigation despite having no cached valid verdict.
+
+## Next step
+
+Repair the eight findings in `.factory/verification-3.md`, add the three missing claim assertions, deploy the changed implementation, and request another independent verification. A real payment was not submitted; checkout registration and redirects were verified without creating a transaction.
