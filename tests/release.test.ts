@@ -17,7 +17,7 @@ describe('release configuration regressions', () => {
     expect(config.routes.find((route: { route: string }) => route.route === '/assets/*').headers['Cache-Control']).toContain('immutable');
     expect(config.mimeTypes['.webmanifest']).toBe('application/manifest+json');
     expect(config.responseOverrides['404']).toEqual({ rewrite: '/404.html', statusCode: 404 });
-    expect(readFileSync('dist/404.html', 'utf8')).toContain('This page is not on the menu.');
+    expect(readFileSync('dist/404.html', 'utf8')).toContain('<h1>Page not found.</h1>');
   });
 
   it('lists every claim with one matching tagged browser test', () => {

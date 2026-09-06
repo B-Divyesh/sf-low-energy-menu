@@ -44,12 +44,12 @@ img { display: block; max-width: 100%; }
 .demo-banner { position: sticky; z-index: 80; top: 0; min-height: 52px; padding: 6px max(20px, env(safe-area-inset-left)); display: flex; align-items: center; justify-content: center; gap: 16px; border-bottom: 2px solid var(--ink); background: var(--corn); color: #172b35; }
 .demo-banner span { font-size: .875rem; }
 .demo-banner div { display: flex; gap: 8px; }
-.demo-banner button { min-height: 40px; padding: 6px 12px; border: 1px solid #172b35; background: #fffdf8; color: #172b35; font-weight: 800; }
+.demo-banner button { min-height: 44px; padding: 6px 12px; border: 1px solid #172b35; background: #fffdf8; color: #172b35; font-weight: 800; }
 .demo-banner button:last-child { background: #172b35; color: #fffdf8; }
 
 .app-header { position: relative; overflow: hidden; padding: 24px max(20px, env(safe-area-inset-left)) 48px; background: #172b35; color: #f6f0e4; }
 .topbar { position: relative; z-index: 2; max-width: 1440px; margin: 0 auto 36px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-.brand { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-weight: 850; letter-spacing: -.02em; }
+.brand { min-height: 44px; display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-weight: 850; letter-spacing: -.02em; }
 .brand-mark { width: 36px; height: 36px; border: 2px solid var(--corn); border-radius: 4px 13px; display: grid; place-items: center; color: var(--corn); }
 .header-nav { display: flex; align-items: center; gap: 8px; }
 .header-nav a { min-height: 44px; display: grid; place-items: center; padding: 0 12px; color: #f6f0e4; font-weight: 700; text-decoration: none; }
@@ -159,13 +159,35 @@ button:active, .buy-button:active { transform: translateY(1px); }
 .file-label { min-height: 46px; padding: 10px 16px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 4px 14px 4px 14px; background: var(--paper-strong); font-weight: 850; cursor: pointer; }
 .file-label input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 
+.explainer-section { margin-top: 80px; padding-top: 48px; border-top: 1px solid var(--line); }
+.explainer-section h2, .limits-section h2, .purchase-section h2 { margin: 0; font: 700 clamp(1.8rem, 4vw, 2.75rem)/1 var(--serif); letter-spacing: -.035em; }
+.step-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 28px 0 0; padding: 0; list-style: none; }
+.step-list li { display: grid; grid-template-columns: 48px 1fr; align-items: start; gap: 14px; }
+.step-list > li > span { width: 48px; height: 48px; display: grid; place-items: center; border: 2px solid var(--ink); border-radius: 4px 18px; background: var(--corn-soft); color: var(--ink); font: 700 1.4rem/1 var(--serif); }
+.step-list h3 { margin: 2px 0 6px; font: 700 1.3rem/1.15 var(--serif); }
+.step-list p { margin: 0; color: var(--ink-muted); line-height: 1.5; }
+.limits-section { margin-top: 72px; padding: 32px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr); gap: 40px; border: 1px solid var(--leaf); border-radius: 5px 32px 5px 5px; background: var(--leaf-soft); }
+.limits-section p { max-width: 58ch; margin: 14px 0 0; line-height: 1.55; }
+.limits-section ul { margin: 0; padding-left: 22px; align-self: center; line-height: 1.75; }
+.purchase-section { margin-top: 72px; padding: 32px; border: 1px solid var(--line); border-radius: 5px 32px 5px 5px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(220px, .8fr) minmax(280px, 1fr); align-items: start; gap: 32px; background: var(--paper-strong); }
+.purchase-section > p { margin: 10px 0 0; color: var(--ink-muted); line-height: 1.5; }
+.purchase-section > ul { margin: 0; padding-left: 20px; line-height: 1.75; }
+.purchase-section.unlock-card { border-color: #172b35; background: #172b35; color: #fffdf8; }
+.purchase-section .premium-stamp { grid-column: 1 / -1; justify-self: start; }
+.purchase-section.utility-card h2 { margin-bottom: 0; }
+.purchase-actions { display: grid; gap: 10px; }
+.purchase-actions > p { margin: 4px 0 0; }
+.restore-form label span, .form-field label span { color: var(--ink-muted); font-weight: 650; }
+.unlock-card .restore-form label span { color: #d9e0e0; }
+
 .app-footer { padding: 32px max(20px, env(safe-area-inset-left)) calc(32px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); }
 .footer-inner { max-width: 1440px; margin: 0 auto; display: flex; justify-content: space-between; gap: 24px; color: var(--ink-muted); font-size: .875rem; }
 .footer-links { display: flex; flex-wrap: wrap; gap: 16px; }
+.footer-links a { min-height: 44px; display: inline-flex; align-items: center; }
 
 .toast-region { position: fixed; z-index: 90; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom)); display: grid; gap: 8px; width: min(360px, calc(100vw - 36px)); }
 .toast { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 4px 16px; background: var(--ink); color: var(--paper); box-shadow: var(--shadow); }
-.toast button { min-height: 36px; padding: 6px 10px; border: 1px solid var(--corn); background: transparent; color: var(--corn); font-weight: 800; }
+.toast button { min-height: 44px; padding: 6px 10px; border: 1px solid var(--corn); background: transparent; color: var(--corn); font-weight: 800; }
 
 dialog { width: min(620px, calc(100vw - 32px)); max-height: calc(100vh - 32px); padding: 0; border: 0; border-radius: 6px 30px 6px 6px; background: var(--paper-strong); color: var(--ink); box-shadow: 0 30px 80px rgb(10 20 25 / 35%); }
 dialog::backdrop { background: rgb(11 25 31 / 72%); backdrop-filter: blur(3px); }
@@ -221,6 +243,9 @@ dialog::backdrop { background: rgb(11 25 31 / 72%); backdrop-filter: blur(3px); 
   .day-card h3, .day-card .day-date { grid-column: 1; }
   .day-card .day-date { grid-row: 2 / span 3; }
   .panel-grid { grid-template-columns: 1fr; gap: 48px; margin-top: 56px; }
+  .step-list { grid-template-columns: 1fr; gap: 24px; }
+  .limits-section, .purchase-section { grid-template-columns: 1fr; gap: 24px; padding: 24px 20px; }
+  .purchase-section .premium-stamp { grid-column: auto; }
   .recipe-list { grid-template-columns: 1fr; }
   .footer-inner { flex-direction: column; }
   .form-grid { grid-template-columns: 1fr; }

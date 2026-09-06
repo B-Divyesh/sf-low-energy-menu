@@ -19,7 +19,7 @@ Try the isolated sample week: <https://low-energy-menu.sociobot.in/demo/>
 
 The sample-data demo starts with three real-looking recipes and five planned nights. Its separate `low-energy-menu-demo` IndexedDB database never reads or changes the household planner. Use **Reset demo** to restore the sample or **Start for real** to discard it.
 
-The free planner supports eight recipe cards plus the current and next week. A $12 USD one-time household unlock adds unlimited recipe cards and full week history. Grocery/data export, warnings, and accessibility are never gated.
+The free planner supports eight recipe cards plus the current and next week. A $12 USD one-time household license adds unlimited recipe cards and full week history. Grocery/data export, warnings, and accessibility are never gated.
 
 ## Develop and verify
 

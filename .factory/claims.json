@@ -1,8 +1,8 @@
 [
   {
     "id": "demo-sandbox",
-    "claim": "Try a realistic sample week without reading or changing household planning data.",
-    "where": "landing first screen, demo banner, README",
+    "claim": "Real plans contain only recipes the household adds; the sample week never reads or changes that data.",
+    "where": "landing first screen, privacy and limits section, demo banner, README",
     "test": "npm test -- --grep @claim:demo-sandbox",
     "sandbox": "fresh browser context; create real data, enter /demo/, mutate and reset sample data, return to the untouched real namespace"
   },
@@ -14,9 +14,30 @@
     "sandbox": "fresh /demo/ sample week; lower Wednesday energy and assert both visible warnings"
   },
   {
+    "id": "repeat-warning",
+    "claim": "Flags a planned dinner that closely repeats a meal from the previous two days.",
+    "where": "planner, README",
+    "test": "npm test -- --grep @claim:repeat-warning",
+    "sandbox": "fresh /demo/ sample week; inspect Tuesday and assert the visible warning for repeating Monday's traybake as leftovers"
+  },
+  {
+    "id": "leftover-warning",
+    "claim": "Flags a leftover dinner when no portion is available from an earlier planned dinner.",
+    "where": "planner, README",
+    "test": "npm test -- --grep @claim:leftover-warning",
+    "sandbox": "fresh /demo/ sample week; remove Monday's source dinner and assert Tuesday's existing leftover dinner shows the unavailable warning"
+  },
+  {
+    "id": "demo-sample-size",
+    "claim": "The sample week opens with exactly three recipes and five planned nights.",
+    "where": "README, demo documentation",
+    "test": "npm test -- --grep @claim:demo-sample-size",
+    "sandbox": "fresh /demo/ storage; count visible recipe cards and read the visible planned-night summary before any change"
+  },
+  {
     "id": "grocery-csv",
-    "claim": "Exports planned recipe ingredients as a grocery CSV.",
-    "where": "grocery tool, README",
+    "claim": "Exports planned recipe ingredients as a grocery CSV without placing an order.",
+    "where": "grocery tool, privacy and limits section, README",
     "test": "npm test -- --grep @claim:grocery-csv",
     "sandbox": "fresh /demo/ sample week; download and assert the header and rows from all three planned recipes"
   },

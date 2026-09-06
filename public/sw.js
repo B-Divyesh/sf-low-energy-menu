@@ -1,4 +1,4 @@
-const CACHE = 'low-energy-menu-v3';
+const CACHE = 'low-energy-menu-v4';
 const SHELL = ['/', '/index.html', '/demo/', '/privacy/', '/terms/', '/404.html', '/offline.html', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/assets/week-rhythm.avif', '/assets/week-rhythm.webp', '/assets/week-rhythm.jpg'];
 self.addEventListener('install', (event) => event.waitUntil((async () => {
   const cache = await caches.open(CACHE);

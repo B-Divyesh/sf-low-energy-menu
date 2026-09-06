@@ -3,7 +3,7 @@
   "short_name": "Energy Menu",
   "description": "A local-first weekly dinner planner built around effort, school meals, and leftovers.",
   "id": "/?source=pwa",
-  "start_url": "/?v=1",
+  "start_url": "/?v=2",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f7f2e8",

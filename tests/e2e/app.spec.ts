@@ -28,13 +28,36 @@ test('loads cleanly with core document landmarks and legal routes', async ({ pag
   await expect(page).toHaveTitle('Low-Energy Menu — plan dinners around your energy');
   await page.goto('/privacy/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Privacy');
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'Privacy — Low-Energy Menu');
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
+  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/icons/icon-192.png');
   await page.goto('/terms/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Terms');
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'Terms — Low-Energy Menu');
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
+  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute('href', '/icons/icon-192.png');
   expect(errors).toEqual([]);
+});
+
+test('shows the job, audience, first action, and result before scrolling', async ({ page }) => {
+  await openHome(page);
+  expect(await page.evaluate(() => scrollY)).toBe(0);
+  const firstScreen = [
+    page.getByRole('heading', { level: 1 }),
+    page.locator('.hero-copy .lede'),
+    page.getByRole('link', { name: 'Try it with sample data' }),
+    page.getByText('See a planned week right away.'),
+  ];
+  for (const item of firstScreen) {
+    const box = await item.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.y + box!.height).toBeLessThanOrEqual(await page.evaluate(() => innerHeight));
+  }
 });
 
 test('@claim:demo-sandbox opens realistic sample data in isolated storage and resets it', async ({ page }) => {
   await openHome(page);
+  await expect(page.locator('.recipe-card')).toHaveCount(0);
   await addRecipe(page, 'Private family soup');
   await page.getByRole('link', { name: 'Try it with sample data' }).click();
   await expect(page).toHaveURL(/\/demo\/$/);
@@ -63,7 +86,32 @@ test('@claim:planning-checks flags effort mismatch and a similar school meal', a
   await expect(wednesday.getByText('Looks similar to the school or canteen meal.')).toBeVisible();
 });
 
+test('@claim:repeat-warning flags a dinner repeated from the previous two days', async ({ page }) => {
+  await page.goto('/demo/');
+  const tuesday = page.locator('.day-card').nth(1);
+  await expect(tuesday.getByText('Lemon chickpea traybake leftovers', { exact: true })).toBeVisible();
+  await expect(tuesday.getByText('A similar meal appears the day before.')).toBeVisible();
+});
+
+test('@claim:leftover-warning flags an existing leftover dinner after its source is removed', async ({ page }) => {
+  await page.goto('/demo/');
+  await page.locator('.day-card').first().getByLabel('Dinner plan').selectOption('');
+  const tuesday = page.locator('.day-card').nth(1);
+  await expect(tuesday.getByText('Lemon chickpea traybake leftovers', { exact: true })).toBeVisible();
+  await expect(tuesday.getByText('No portion of these leftovers is available yet.')).toBeVisible();
+});
+
+test('@claim:demo-sample-size opens with exactly three recipes and five planned nights', async ({ page }) => {
+  await page.goto('/demo/');
+  await expect(page.locator('.recipe-card')).toHaveCount(3);
+  await expect(page.locator('.summary-stat').filter({ hasText: 'nights planned' })).toHaveText('5nights planned');
+});
+
 test('@claim:grocery-csv exports every grocery row from the sample week', async ({ page }) => {
+  const externalRequests: string[] = [];
+  page.on('request', (request) => {
+    if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') externalRequests.push(request.url());
+  });
   await page.goto('/demo/');
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export grocery CSV' }).click();
@@ -76,6 +124,7 @@ test('@claim:grocery-csv exports every grocery row from the sample week', async 
   expect(csv).toContain('"chickpeas","2","cans"');
   expect(csv).toContain('"pasta","500","g"');
   expect(csv).toContain('"tortillas","8",""');
+  expect(externalRequests).toEqual([]);
 });
 
 test('@claim:backup-roundtrip exports and restores the complete plan', async ({ page }) => {
@@ -126,7 +175,7 @@ test('@claim:offline-reload reloads the sample plan without a network', async ({
 test('@claim:free-and-paid enforces eight free recipes and accepts a valid one-time license', async ({ page }) => {
   await page.goto('/demo/');
   await expect(page.getByText('$12 USD')).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Buy household unlock' })).toHaveAttribute('href', 'https://api.sociobot.in/api/v1/products/low-energy-menu/checkout');
+  await expect(page.getByRole('link', { name: 'Buy household license' })).toHaveAttribute('href', 'https://api.sociobot.in/api/v1/products/low-energy-menu/checkout');
   await page.getByRole('button', { name: 'Start for real' }).click();
   for (let index = 1; index <= 8; index += 1) await addRecipe(page, `Weeknight recipe ${index}`);
   await page.getByRole('button', { name: '+ Add recipe' }).click();
@@ -138,7 +187,7 @@ test('@claim:free-and-paid enforces eight free recipes and accepts a valid one-t
     body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null }),
   }));
   await page.getByLabel('Have a license? Paste it').fill('test-valid-license');
-  await page.getByRole('button', { name: 'Restore' }).click();
+  await page.getByRole('button', { name: 'Restore license' }).click();
   await expect(page.getByText('Household unlocked')).toBeVisible();
   await addRecipe(page, 'Ninth recipe');
 });
@@ -168,7 +217,7 @@ test('@claim:week-history limits free week navigation and opens past and future 
     body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null }),
   }));
   await page.getByLabel('Have a license? Paste it').fill('test-valid-history-license');
-  await page.getByRole('button', { name: 'Restore' }).click();
+  await page.getByRole('button', { name: 'Restore license' }).click();
   await expect(page.getByText('Household unlocked')).toBeVisible();
 
   const realCurrentWeek = await weekTitle().innerText();
@@ -210,6 +259,63 @@ test('@claim:outcome-tracking updates and persists cooked and changed weekly cou
   await expect(outcomeStat('changed')).toHaveText('1changed');
 });
 
+test('keeps paid features locked while a first license is pending and when it is invalid', async ({ page }) => {
+  await openHome(page);
+  await page.route('https://api.sociobot.in/**', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: { 'access-control-allow-origin': '*' },
+      body: JSON.stringify({ valid: false, reason: 'invalid', expires_at: null }),
+    });
+  });
+  const initialWeek = await page.locator('.week-title').innerText();
+  await page.getByLabel(/Have a license\? Paste it/).fill('not-a-valid-license');
+  await page.getByRole('button', { name: 'Restore license' }).click();
+  await expect(page.getByText('Household unlocked')).toHaveCount(0);
+  await expect(page.getByText('Checking this license. Paid features stay locked until it is verified.')).toBeVisible();
+  await page.getByRole('button', { name: 'Previous week' }).click();
+  await expect(page.locator('.week-title')).toHaveText(initialWeek);
+  await expect(page.getByText('This license is no longer active.')).toBeVisible();
+  await expect(page.getByText('Household unlocked')).toHaveCount(0);
+});
+
+test('keeps a first-time license locked during an outage, then recovers and preserves its verified offline state', async ({ page }) => {
+  await openHome(page);
+  await page.route('https://api.sociobot.in/**', (route) => route.abort());
+  const initialWeek = await page.locator('.week-title').innerText();
+  await page.getByLabel(/Have a license\? Paste it/).fill('license-that-recovers');
+  await page.getByRole('button', { name: 'Restore license' }).click();
+  await expect(page.getByText('License verification is unavailable. Paid features stay locked.')).toBeVisible();
+  await expect(page.getByText('Household unlocked')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Previous week' }).click();
+  await expect(page.locator('.week-title')).toHaveText(initialWeek);
+
+  await page.unroute('https://api.sociobot.in/**');
+  await page.route('https://api.sociobot.in/**', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    headers: { 'access-control-allow-origin': '*' },
+    body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null }),
+  }));
+  await page.getByLabel(/Have a license\? Paste it/).fill('license-that-recovers');
+  await page.getByRole('button', { name: 'Restore license' }).click();
+  await expect(page.getByText('Household unlocked')).toBeVisible();
+
+  await page.evaluate(() => {
+    const key = 'sb_license_verdict:low-energy-menu';
+    const verdict = JSON.parse(localStorage.getItem(key) || '{}');
+    verdict.checkedAt = 0;
+    localStorage.setItem(key, JSON.stringify(verdict));
+  });
+  await page.unroute('https://api.sociobot.in/**');
+  await page.route('https://api.sociobot.in/**', (route) => route.abort());
+  await page.reload();
+  await expect(page.getByText('Household unlocked')).toBeVisible();
+  await expect(page.getByText('Offline — using the last verified license.')).toBeVisible();
+});
+
 test('adds a recipe, plans a low-energy night, warns, and exports groceries', async ({ page }) => {
   await openHome(page);
   await addRecipe(page, 'Tomato lentil pasta', '3', '2 | cans | lentils\n1 | bunch | spinach');
@@ -226,7 +332,7 @@ test('adds a recipe, plans a low-energy night, warns, and exports groceries', as
 test('shows a designed not-found route and plain import recovery', async ({ page }) => {
   await page.goto('/does-not-exist');
   await expect(page).toHaveTitle('Page not found — Low-Energy Menu');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('This page is not on the menu.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found.');
   await openHome(page);
   await page.locator('input[data-action="import"]').setInputFiles({ name: 'broken.json', mimeType: 'application/json', buffer: Buffer.from('{broken') });
   await expect(page.getByText('That file is not a valid Low-Energy Menu backup. Choose a JSON backup exported by this app.')).toBeVisible();
@@ -245,6 +351,9 @@ test('has no serious or critical accessibility violations on home and demo', asy
 
 test('supports keyboard-only navigation, dialog focus, reduced motion, and narrow screens', async ({ page }) => {
   await openHome(page);
+  await expect(page.getByRole('heading', { name: 'How it works' })).toBeVisible();
+  await expect(page.locator('.step-list > li')).toHaveCount(3);
+  await expect(page.getByRole('heading', { name: 'What this planner does not do' })).toBeVisible();
   await page.keyboard.press('Tab');
   await expect(page.locator('.skip-link')).toBeFocused();
   await expect(page.locator('.skip-link')).toHaveCSS('outline-style', 'solid');
@@ -254,10 +363,33 @@ test('supports keyboard-only navigation, dialog focus, reduced motion, and narro
   await addButton.focus();
   await page.keyboard.press('Enter');
   await expect(page.getByLabel('Recipe name')).toBeFocused();
+  await expect(page.locator('label[for="recipe-name"]')).toContainText('(required)');
   await page.keyboard.press('Escape');
   await expect(page.locator('#recipe-dialog')).not.toBeVisible();
+  await expect(addButton).toBeFocused();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const reducedDuration = await page.locator('.primary-button').first().evaluate((element) => Number.parseFloat(getComputedStyle(element).transitionDuration));
   expect(reducedDuration).toBeLessThan(0.001);
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  await page.addStyleTag({ content: ':root { font-size: 32px !important; }' });
+  const clippedText = await page.evaluate(() =>
+    [...document.querySelectorAll('h1, h2, h3, p, li, label, button, a, input, select')]
+      .filter((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.width > 0 && (rect.left < -1 || rect.right > innerWidth + 1);
+      }).length,
+  );
+  expect(clippedText).toBe(0);
+});
+
+test('keeps the home and demo controls at least 44 pixels high', async ({ page }) => {
+  await openHome(page);
+  const homeBox = await page.getByRole('link', { name: 'Low-Energy Menu home' }).boundingBox();
+  expect(homeBox?.height).toBeGreaterThanOrEqual(44);
+  await page.goto('/demo/');
+  for (const name of ['Reset demo', 'Start for real']) {
+    const box = await page.getByRole('button', { name }).boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+  }
 });

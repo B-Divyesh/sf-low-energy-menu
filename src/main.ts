@@ -88,6 +88,21 @@ function renderRecipe(recipe: Recipe): string {
   </article></li>`;
 }
 
+function renderPurchase(): string {
+  if (license.unlocked) {
+    return `<section class="purchase-section utility-card" id="unlock" aria-labelledby="unlock-title">
+      <span class="premium-stamp">✓ Household unlocked</span>
+      <h2 id="unlock-title">Household license active</h2>
+      <p>Your verified one-time license includes unlimited recipes and full week history on this device.</p>
+    </section>`;
+  }
+  return `<section class="purchase-section unlock-card" id="unlock" aria-labelledby="unlock-title">
+    <div><p class="eyebrow">One-time purchase</p><h2 id="unlock-title">Add more recipes and weeks</h2><p><span class="unlock-price">$12 USD</span> once. No subscription.</p></div>
+    <ul><li>Unlimited recipe cards</li><li>Full previous and future week history</li><li>Grocery and data exports stay free</li></ul>
+    <div class="purchase-actions"><a class="buy-button" href="${checkoutUrl}">Buy household license</a>${isDemo ? '<p>Start for real before restoring a license. Demo actions never change your license.</p>' : '<form class="restore-form" data-action="restore"><label for="license-token">Have a license? Paste it <span>(required)</span></label><div class="restore-row"><input id="license-token" name="license" required autocomplete="off"><button class="secondary-button" type="submit">Restore license</button></div></form>'}<p><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a><br>Sociobot/Dodo is the merchant of record.</p></div>
+  </section>`;
+}
+
 function render(): void {
   const week = ensureWeek(data, activeWeek);
   const dates = weekDates(activeWeek);
@@ -102,7 +117,7 @@ function render(): void {
     <header class="app-header">
       <div class="topbar">
         <a class="brand" href="${isDemo ? '/demo/' : '/'}" aria-label="Low-Energy Menu home"><span class="brand-mark" aria-hidden="true">◒</span><span>Low-Energy Menu</span></a>
-        <nav class="header-nav" aria-label="Main navigation"><a href="/demo/">Demo</a><a href="#planner">Week</a><a href="#recipes">Recipes</a><a href="#data">Data & unlock</a></nav>
+        <nav class="header-nav" aria-label="Main navigation"><a href="/demo/">Demo</a><a href="#planner">Week</a><a href="#how-it-works">How it works</a><a href="#unlock">Price</a></nav>
         <span class="status-chip ${navigator.onLine ? '' : 'offline'}" id="network-status"><span class="status-dot" aria-hidden="true"></span>${navigator.onLine ? (offlineReady ? 'Ready offline' : 'Online') : 'Offline'}</span>
       </div>
       <div class="hero">
@@ -127,16 +142,28 @@ function render(): void {
           ${data.recipes.length ? `<ul class="recipe-list">${data.recipes.map(renderRecipe).join('')}</ul>` : `<div class="empty-recipes"><div class="empty-geometry" aria-hidden="true"></div><div><h3>Start with dinners you already know.</h3><p>Add effort, extra leftover dinners, your own tags, and grocery ingredients. Add only recipes your household already uses.</p><button class="primary-button" type="button" data-action="add-recipe">Add your first recipe</button></div></div>`}
         </section>
         <aside class="side-stack" id="data" aria-label="Grocery, data, and purchase tools">
-          <section class="utility-card"><h3>Grocery list</h3><p>${groceries ? `${groceries} combined ingredient line${groceries === 1 ? '' : 's'} from dinners cooked this week.` : 'Plan a recipe dinner with ingredients to create the list.'}</p><button class="secondary-button" type="button" data-action="grocery" ${groceries ? '' : 'disabled'}>Export grocery CSV</button></section>
-          <section class="utility-card"><h3>Your data, portable</h3><p>Back up every recipe and week as JSON, or bring a backup onto this device.</p><div class="button-stack"><button class="secondary-button" type="button" data-action="export">Export backup</button><label class="file-label">Import backup<input type="file" data-action="import" accept="application/json,.json"></label><button class="danger-button" type="button" data-action="erase">Erase local data</button></div><p class="data-note">Stored only in this browser. Import replaces local planning data after confirmation.</p></section>
-          ${license.unlocked ? `<section class="utility-card"><span class="premium-stamp">✓ Household unlocked</span><h3>More recipes and weeks</h3><p>Your one-time license unlocks unlimited recipes and full week history on this device.</p></section>` : `<section class="utility-card unlock-card"><p class="eyebrow">One-time unlock</p><h3>Add more recipes and weeks</h3><p><span class="unlock-price">$12 USD</span> once. No subscription.</p><ul><li>Unlimited recipe cards</li><li>Full previous and future week history</li><li>Free export stays free</li></ul><a class="buy-button" href="${checkoutUrl}">Buy household unlock</a>${isDemo ? '<p>Start for real before restoring a license. Demo actions never change your license.</p>' : '<form class="restore-form" data-action="restore"><label for="license-token">Have a license? Paste it</label><div class="restore-row"><input id="license-token" name="license" required autocomplete="off"><button class="secondary-button" type="submit">Restore</button></div></form>'}<p><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a><br>Sociobot/Dodo is the merchant of record.</p></section>`}
+          <section class="utility-card"><h3>Grocery list</h3><p>${groceries ? `${groceries} combined ingredient line${groceries === 1 ? '' : 's'} from planned recipe dinners this week.` : 'Plan a recipe dinner with ingredients to create the list.'}</p><button class="secondary-button" type="button" data-action="grocery" ${groceries ? '' : 'disabled'}>Export grocery CSV</button></section>
+          <section class="utility-card"><h3>Back up or import data</h3><p>Back up every recipe and week as JSON, or bring a backup onto this device.</p><div class="button-stack"><button class="secondary-button" type="button" data-action="export">Export backup</button><label class="file-label">Import backup<input type="file" data-action="import" accept="application/json,.json"></label><button class="danger-button" type="button" data-action="erase">Erase local data</button></div><p class="data-note">Stored only in this browser. Import replaces local planning data after confirmation.</p></section>
         </aside>
       </div>
+      <section class="explainer-section" id="how-it-works" aria-labelledby="how-title">
+        <h2 id="how-title">How it works</h2>
+        <ol class="step-list">
+          <li><span aria-hidden="true">1</span><div><h3>Set each day’s energy</h3><p>Choose low, medium, or high before you plan dinner.</p></div></li>
+          <li><span aria-hidden="true">2</span><div><h3>Plan familiar dinners</h3><p>Add your recipes, school meals, and leftovers to the week.</p></div></li>
+          <li><span aria-hidden="true">3</span><div><h3>Check and export</h3><p>Review planning warnings, then export groceries or a complete backup.</p></div></li>
+        </ol>
+      </section>
+      <section class="limits-section" aria-labelledby="limits-title">
+        <div><p class="eyebrow">Privacy and limits</p><h2 id="limits-title">What this planner does not do</h2><p>Your recipes and plans stay in this browser. Export a backup before clearing browser data or changing devices.</p></div>
+        <ul><li>You enter the recipes your household already uses.</li><li>It does not generate recipes or order groceries.</li><li>Warnings are not nutrition, allergy, medical, or food-safety advice.</li></ul>
+      </section>
+      ${renderPurchase()}
     </main>
-    <footer class="app-footer"><div class="footer-inner"><span>Plan household dinners around daily energy. Built by Param Factory · repair-2. Illustration generated for this product.</span><nav class="footer-links" aria-label="Legal"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://github.com/B-Divyesh/sf-low-energy-menu" rel="external">Source (external)</a></nav></div></footer>
+    <footer class="app-footer"><div class="footer-inner"><span>Plan household dinners around daily energy. Built by Param Factory · repair-3. Illustration generated for this product.</span><nav class="footer-links" aria-label="Legal"><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><a href="https://github.com/B-Divyesh/sf-low-energy-menu" rel="external">Source (external)</a></nav></div></footer>
     <div class="toast-region" aria-live="polite" aria-atomic="true">${toastMessage ? `<div class="toast"><span>${escapeHtml(toastMessage)}</span><button type="button" data-action="toast">${updateWorker ? 'Reload' : 'Dismiss'}</button></div>` : ''}</div>
     <dialog id="recipe-dialog" aria-labelledby="recipe-dialog-title"><form class="dialog-form" id="recipe-form"><input type="hidden" name="id"><h2 id="recipe-dialog-title">Add a recipe</h2><p class="dialog-intro">Record what your household already cooks. Tags and allergens are your own notes, not verified claims.</p>
-      <div class="form-grid"><div class="form-field full"><label for="recipe-name">Recipe name</label><input id="recipe-name" name="name" required maxlength="80" autocomplete="off"></div>
+      <div class="form-grid"><div class="form-field full"><label for="recipe-name">Recipe name <span>(required)</span></label><input id="recipe-name" name="name" required maxlength="80" autocomplete="off"></div>
       <div class="form-field"><label for="recipe-effort">Effort</label><select id="recipe-effort" name="effort"><option value="1">Low · mostly hands-off</option><option value="2" selected>Medium · some prep</option><option value="3">High · active cooking</option></select></div>
       <div class="form-field"><label for="recipe-leftovers">Extra dinners made</label><input id="recipe-leftovers" name="leftovers" type="number" min="0" max="6" value="0" inputmode="numeric"></div>
       <div class="form-field full"><label for="recipe-tags">Tags / allergen notes</label><input id="recipe-tags" name="tags" maxlength="160" placeholder="vegetarian, contains nuts, pasta"><p class="help-text">Comma-separated, entered and checked by you.</p></div>
@@ -290,7 +317,7 @@ function bindEvents(): void {
   });
   document.querySelector<HTMLFormElement>('form[data-action="restore"]')?.addEventListener('submit', async (event) => {
     event.preventDefault(); const token = new FormData(event.currentTarget as HTMLFormElement).get('license');
-    if (!token) return; storeLicense(String(token)); license = { unlocked: true, notice: 'Checking license…' }; render(); license = await verifyLicense(true); render();
+    if (!token) return; storeLicense(String(token)); license = { unlocked: false, notice: 'Checking this license. Paid features stay locked until it is verified.' }; render(); license = await verifyLicense(true); render();
   });
   document.querySelector('[data-action="toast"]')?.addEventListener('click', () => {
     if (updateWorker) { updateWorker.postMessage({ type: 'SKIP_WAITING' }); return; }
@@ -321,7 +348,7 @@ async function registerServiceWorker(): Promise<void> {
 async function start(): Promise<void> {
   if (!isAppRoute) {
     document.title = 'Page not found — Low-Energy Menu';
-    app.innerHTML = `<main id="main" class="not-found"><p class="eyebrow">404 · Page not found</p><h1>This page is not on the menu.</h1><p>The address may be wrong, or the page may have moved.</p><a class="primary-button" href="/">Return to the planner</a></main>`;
+    app.innerHTML = `<main id="main" class="not-found"><p class="eyebrow">404 · Page not found</p><h1>Page not found.</h1><p>The address may be wrong, or the page may have moved.</p><a class="primary-button" href="/">Return to the planner</a></main>`;
     return;
   }
   useDemoStorage(isDemo);

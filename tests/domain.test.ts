@@ -26,7 +26,7 @@ describe('household planning rules', () => {
     expect(availableLeftovers(week, '2026-08-26', data.recipes)).toHaveLength(0);
   });
 
-  it('aggregates grocery quantities only for cooked recipe slots', () => {
+  it('aggregates grocery quantities from planned recipe slots', () => {
     const data = createEmptyData(); data.recipes.push(lentils);
     const week = ensureWeek(data, '2026-08-24');
     week.days['2026-08-24']!.dinner = { kind: 'recipe', recipeId: 'lentils' };
