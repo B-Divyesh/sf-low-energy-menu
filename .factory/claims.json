@@ -47,5 +47,19 @@
     "where": "landing facts, purchase card, terms, README",
     "test": "npm test -- --grep @claim:free-and-paid",
     "sandbox": "enter through /demo/; assert production checkout identity, start with clean real data, reach the free limit, mock a valid product-license verdict, and add a ninth recipe"
+  },
+  {
+    "id": "week-history",
+    "claim": "The free planner opens the current and next week; a valid $12 one-time license opens previous and future weeks.",
+    "where": "landing facts, purchase card, terms, README",
+    "test": "npm test -- --grep @claim:week-history",
+    "sandbox": "fresh /demo/ entry; prove the free previous and beyond-next controls keep the displayed week unchanged, then start for real, mock a valid license verdict, and navigate before and after the current week"
+  },
+  {
+    "id": "outcome-tracking",
+    "claim": "Mark cooked or changed dinners and see both weekly outcome counts update and persist.",
+    "where": "planner, README",
+    "test": "npm test -- --grep @claim:outcome-tracking",
+    "sandbox": "fresh /demo/ sample week; mark one planned dinner cooked, reload, mark it changed, and assert the cooked and changed summary counts after each saved state"
   }
 ]

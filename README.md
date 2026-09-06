@@ -12,7 +12,7 @@ Try the isolated sample week: <https://low-energy-menu.sociobot.in/demo/>
 - Stores only recipes the household enters, including effort, extra leftover dinners, tags, notes, and grocery ingredients.
 - Places cooked recipes, available leftovers, or a flexible night on a seven-day plan.
 - Flags effort mismatches, school-meal overlap, close repetition, and unavailable leftovers.
-- Tracks cooked and changed dinners against the product’s success measure.
+- Tracks cooked and changed dinners with weekly outcome counts.
 - Combines planned recipe ingredients into a downloadable grocery CSV.
 - Exports and imports a complete JSON backup.
 - Works offline after the first completed load and stores planning data in IndexedDB.

@@ -143,6 +143,73 @@ test('@claim:free-and-paid enforces eight free recipes and accepts a valid one-t
   await addRecipe(page, 'Ninth recipe');
 });
 
+test('@claim:week-history limits free week navigation and opens past and future weeks after a valid license', async ({ page }) => {
+  await page.goto('/demo/');
+  const weekTitle = () => page.locator('.week-title');
+  const currentWeek = await weekTitle().innerText();
+
+  await page.getByRole('button', { name: 'Previous week' }).click();
+  await expect(page.getByText('Previous week history is part of the one-time unlock.')).toBeVisible();
+  await expect(weekTitle()).toHaveText(currentWeek);
+
+  await page.getByRole('button', { name: 'Next week' }).click();
+  const nextWeek = await weekTitle().innerText();
+  expect(nextWeek).not.toBe(currentWeek);
+  await page.getByRole('button', { name: 'Next week' }).click();
+  await expect(page.getByText('Planning beyond next week is part of the one-time unlock.')).toBeVisible();
+  await expect(weekTitle()).toHaveText(nextWeek);
+
+  await page.getByRole('button', { name: 'Start for real' }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await page.route('https://api.sociobot.in/**', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    headers: { 'access-control-allow-origin': '*' },
+    body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null }),
+  }));
+  await page.getByLabel('Have a license? Paste it').fill('test-valid-history-license');
+  await page.getByRole('button', { name: 'Restore' }).click();
+  await expect(page.getByText('Household unlocked')).toBeVisible();
+
+  const realCurrentWeek = await weekTitle().innerText();
+  await page.getByRole('button', { name: 'Previous week' }).click();
+  const previousWeek = await weekTitle().innerText();
+  expect(previousWeek).not.toBe(realCurrentWeek);
+  await page.getByRole('button', { name: 'Next week' }).click();
+  await expect(weekTitle()).toHaveText(realCurrentWeek);
+  await page.getByRole('button', { name: 'Next week' }).click();
+  const realNextWeek = await weekTitle().innerText();
+  expect(realNextWeek).not.toBe(realCurrentWeek);
+  await page.getByRole('button', { name: 'Next week' }).click();
+  await expect(weekTitle()).not.toHaveText(realNextWeek);
+});
+
+test('@claim:outcome-tracking updates and persists cooked and changed weekly counts', async ({ page }) => {
+  const outcomeStat = (label: 'cooked' | 'changed') => page.locator('.summary-stat').filter({ hasText: label });
+  await page.goto('/demo/');
+  const wednesday = () => page.locator('.day-card').nth(2);
+
+  await expect(outcomeStat('cooked')).toHaveText('1cooked');
+  await expect(outcomeStat('changed')).toHaveText('0changed');
+  await wednesday().getByRole('button', { name: /Cooked/ }).click();
+  await expect(wednesday().getByRole('button', { name: /Cooked/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(outcomeStat('cooked')).toHaveText('2cooked');
+  await expect(outcomeStat('changed')).toHaveText('0changed');
+
+  await page.reload();
+  await expect(wednesday().getByRole('button', { name: /Cooked/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(outcomeStat('cooked')).toHaveText('2cooked');
+  await wednesday().getByRole('button', { name: /Changed/ }).click();
+  await expect(wednesday().getByRole('button', { name: /Changed/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(outcomeStat('cooked')).toHaveText('1cooked');
+  await expect(outcomeStat('changed')).toHaveText('1changed');
+
+  await page.reload();
+  await expect(wednesday().getByRole('button', { name: /Changed/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(outcomeStat('cooked')).toHaveText('1cooked');
+  await expect(outcomeStat('changed')).toHaveText('1changed');
+});
+
 test('adds a recipe, plans a low-energy night, warns, and exports groceries', async ({ page }) => {
   await openHome(page);
   await addRecipe(page, 'Tomato lentil pasta', '3', '2 | cans | lentils\n1 | bunch | spinach');

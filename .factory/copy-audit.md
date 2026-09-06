@@ -9,13 +9,12 @@ Audited 2026-08-28. Counts use whitespace-separated words; UI labels and recipe 
 | See a planned week right away. | 6 |
 | Your plans stay in this browser. | 6 |
 | Works offline after the first visit. | 6 |
-| Free for 8 recipes. | 4 |
-| $12 once for more. | 4 |
+| Free for 8 recipes. $12 once for more recipes and weeks. | 11 |
 | Start with energy, then place meals. | 6 |
 | Warnings are prompts to reconsider—not nutrition or allergy advice. | 9 |
 | Start with dinners you already know. | 6 |
 | Add effort, extra leftover dinners, your own tags, and grocery ingredients. | 11 |
-| No recipe corpus or generated meals—this stays yours. | 8 |
+| Add only recipes your household already uses. | 7 |
 | Plan a recipe dinner with ingredients to create the list. | 10 |
 | Back up every recipe and week as JSON, or bring a backup onto this device. | 15 |
 | Stored only in this browser. | 5 |
@@ -23,6 +22,7 @@ Audited 2026-08-28. Counts use whitespace-separated words; UI labels and recipe 
 | No subscription. | 2 |
 | Free export stays free. | 4 |
 | Demo actions never change your license. | 6 |
+| Mark cooked or changed dinners and see both weekly outcome counts. | 11 |
 
 Demo-only prose:
 
