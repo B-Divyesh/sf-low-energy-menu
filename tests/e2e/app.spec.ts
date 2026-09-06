@@ -172,6 +172,12 @@ test('@claim:offline-reload reloads the sample plan without a network', async ({
   await expect(page.getByText('Offline', { exact: true })).toBeVisible();
 });
 
+test.describe('mocked paid-license checks', () => {
+  // Playwright does not route requests claimed by a service worker. These checks
+  // intentionally mock the external verifier, so use an isolated context where
+  // service workers cannot race or bypass the browser-level route handler.
+  test.use({ serviceWorkers: 'block' });
+
 test('@claim:free-and-paid enforces eight free recipes and accepts a valid one-time license', async ({ page }) => {
   await page.goto('/demo/');
   await expect(page.getByText('$12 USD')).toBeVisible();
@@ -233,6 +239,8 @@ test('@claim:week-history limits free week navigation and opens past and future 
   await expect(weekTitle()).not.toHaveText(realNextWeek);
 });
 
+});
+
 test('@claim:outcome-tracking updates and persists cooked and changed weekly counts', async ({ page }) => {
   const outcomeStat = (label: 'cooked' | 'changed') => page.locator('.summary-stat').filter({ hasText: label });
   await page.goto('/demo/');
@@ -258,6 +266,9 @@ test('@claim:outcome-tracking updates and persists cooked and changed weekly cou
   await expect(outcomeStat('cooked')).toHaveText('1cooked');
   await expect(outcomeStat('changed')).toHaveText('1changed');
 });
+
+test.describe('mocked license recovery checks', () => {
+  test.use({ serviceWorkers: 'block' });
 
 test('keeps paid features locked while a first license is pending and when it is invalid', async ({ page }) => {
   await openHome(page);
@@ -314,6 +325,8 @@ test('keeps a first-time license locked during an outage, then recovers and pres
   await page.reload();
   await expect(page.getByText('Household unlocked')).toBeVisible();
   await expect(page.getByText('Offline — using the last verified license.')).toBeVisible();
+});
+
 });
 
 test('adds a recipe, plans a low-energy night, warns, and exports groceries', async ({ page }) => {
